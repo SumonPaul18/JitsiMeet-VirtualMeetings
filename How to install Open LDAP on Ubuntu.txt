@@ -1,0 +1,144 @@
+
++++++++++++++++++++++++++++++++++++++++
++ How to install Open LDAP on Ubuntu  +
++++++++++++++++++++++++++++++++++++++++
+
+hostname
+
+hostname -f
+
+ip a
+
+sudo -i
+
+hostnamectl set-hostname ldap.paulco.xyz
+
+nano /etc/hosts
+
+apt update && sudo apt upgrade -y
+
+apt install slapd ldap-utils -y
+
+# set the admin password:
+********
+
+systemctl status slapd
+
+systemctl start slapd
+
+systemctl enable slapd
+
+slapcat
+
+## If Configure Firewall:
+
+# Check status of UFW firewall
+
+ufw status 
+
+# Enable the firewall if it not yet running
+
+ufw enable 
+
+#Allow below ports on firewall
+
+ufw allow 389 
+ufw allow 636 
+ufw allow 80
+
+# Reload ufw firewall
+
+ufw reload 
+
++++++++++++++++++++++++++++++++++++++++
++ Install LDAP Account Manager (LAM)  +
++++++++++++++++++++++++++++++++++++++++
+
+apt install -y apache2 php php-cgi libapache2-mod-php php-mbstring php-common php-pear
+
+systemctl start apache2
+
+systemctl enable apache2
+
+systemctl status apache2
+
+a2enconf php*-cgi
+
+apt -y install ldap-account-manager
+
+systemctl restart apache2
+
+## Configure LAM through the web interface:
+
+http://IP-Server/lam
+
+> On the page LAM login, click >LAM Configuration
+
+> Click on the Edit server profiles button
+
+> Login to LAM with the default password is lam and click OK
+
+
+> On the page General settings, we will set the sections below:
+
+> In the section Server settings keep the default
+
+> In the section Language settings choose your language and time zone:
+
+> In the section Tool settings :
+Hidden tools: keep the default
+Tree suffix: dc=totatca,dc=local
+
+> In the section Security settings
+Login method: Fixed list
+List of valid users: cn=admin,dc=totatca,dc=local
+
+> In the section Profile password, set a new password for the lam user (default is lam )
+
+> Go to the Account types tab, scroll down to the section Active account types setup as below:
+
+> Users:
+LDAP suffix: ou=Department,dc=totatca,dc=local ( Create an OU (Organizational Unit) parent for your LDAP server)
+Others: keep the default
+
+> Groups:
+LDAP suffix: ou=Groups,dc=totatca,dc=local
+Others: keep the default
+
+## Then, click the Save button to save the changes on the default profile lam, and you will be redirected again to the LDAP Account Manager login page, enter the password of the admin (OpenLDAP admin in step 3) user and click Login
+
+##Click the Create button to create the structure OU and Groups
+
++++++++++++++++++++++++++++++
+
+---------------------------------
+# reconfigure ldap
+
+dpkg-reconfigure slapd
+
+---------------------------------
+
+
+++++++++++++++++++++++++++++++++++++
++ LDAP Server Troubleshooting      +
+++++++++++++++++++++++++++++++++++++
+
+slapcat
+
+ldapsearch -H ldaps://202.74.241.123:636 -x -D ou=IT,ou=Department,dc=aamranetworks,dc=net -w aamraldap -b ou=IT,ou=Department,dc=aamranetworks,dc=net 
+
+ldapsearch -x -LLL -b dc=aamranetworks,dc=net
+
+ldapsearch -x -LLL -b dc=emailcitis,dc=com
+
+ldapsearch -x -H "ldap://lam.aamranetworks.net" -P 3 -LLL -b "DC=aamranetworks,DC=net"
+
+ldapsearch -x -H "ldap://lam.aamranetworks.net" -b "DC=aamranetworks,DC=net"
+
+ldapsearch -x -h lam.aamranetworks.net -b "dc=aamranetworks,dc=net"
+
+ldapsearch -x -h lam.aamranetworks.net -b "dc=aamranetworks,dc=net" '(uid=sumon)'
+
+ldapsearch -x -h zmail2.aamranetworks.net -b "dc=aamranetworks,dc=net" '(uid=jashim)'
+
++++++++++++++++++++++++++++++++++++++++++

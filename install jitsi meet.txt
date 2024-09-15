@@ -1,0 +1,29 @@
+How to Install Jitsi Meet on Ubuntu Server
+
+hostnamectl set-hostname meeting.aamranetworks.net
+
+echo '202.74.241.125 meeting.aamranetworks.net meeting' > /etc/hosts
+
+
+
+apt update && apt upgrade -y
+
+echo deb http://packages.prosody.im/debian $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list
+wget https://prosody.im/files/prosody-debian-packages.key -O- | sudo apt-key add -
+apt install lua5.2 -y
+
+
+wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | apt-key add -
+sh -c "echo 'deb https://download.jitsi.org stable/' > /etc/apt/sources.list.d/jitsi-stable.list"
+apt update -y
+
+
+sudo apt install jitsi-meet -y
+
+    #Enter FQDN: meeting.aamranetworks.net
+    #Enter Mail: sumon.kumar@aamra.com.bd
+    
+    
+    
+
+

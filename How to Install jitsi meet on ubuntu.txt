@@ -1,0 +1,118 @@
+
+++++++++++++++++++++++++++++++++++++++++
++ How to Install jitsi meet on ubuntu  +
+++++++++++++++++++++++++++++++++++++++++
+
+hostnamectl set-hostname meet.paulco.xyz
+
+nano /etc/hosts
+
+ufw status
+
+# if ufw is inactive then need to do enable
+
+# ufw enable
+
+ufw openssh
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 4443/tcp
+ufw allow 10000/udp
+
+
+ufw status
+
+
+# Download and install the Prosody package repository:
+
+echo deb http://packages.prosody.im/debian $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list
+
+wget https://prosody.im/files/prosody-debian-packages.key -O- | sudo apt-key add -
+
+apt install lua5.2
+
+# Download the APT key and set up the repositories of Jitsi:
+
+wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | apt-key add -
+sh -c "echo 'deb https://download.jitsi.org stable/' > /etc/apt/sources.list.d/jitsi-stable.list"
+
+apt update -y
+
+apt upgrade -y
+
+# Launch the installation of Jitsi Meet:
+
+apt install -y jitsi-meet
+
+# When asked:
+
+* The FQDN of your Instance. For example jitsi.mydomain.tld and press Enter.
+* When asked about the SSL certificate choose the Let's Encrypt certificates option and press Enter.
+* Enter your email address: 
+
+
+# Open a Web-browser and type the FQDN of your Instance:
+
+for example: https://meet.paulco.xyz
+ 
+-----------------------------------
+Now basic configuration jitsi meet 
+-----------------------------------
+nano /etc/prosody/conf.avail/meet.paulco.xyz.cfg.lua
+
+# Edit this line:
+
+        authentication = "anonymous"
+To
+
+        authentication = "internal_plain"
+
+# This configuration tells Jitsi Meet to force username and password authentication before allowing conference room creation by a new visitor.
+
+Then, in the same file, add the bellow lines to the end of the file:
+
+
+VirtualHost "guest.jitsi.your_domain"
+    authentication = "anonymous"
+    c2s_require_encryption = false
+
+# Open another configuration file at /etc/jitsi/meet/jitsi.your_domain-config.js with a text editor:
+
+nano /etc/jitsi/meet/jitsi.your_domain-config.js
+
+# Edit this line:
+
+        // anonymousdomain: 'guest.jitsi.your_domain',
+To:
+
+        anonymousdomain: 'guest.jitsi.your_domain',
+
+# Next, open /etc/jitsi/jicofo/sip-communicator.properties:
+
+nano /etc/jitsi/jicofo/sip-communicator.properties
+
+# And add the following line to complete the configuration changes:
+
+org.jitsi.jicofo.auth.URL=XMPP: jitsi server FQDN
+
+# create user for login jitsi meet using prosodyctl module:
+
+sudo prosodyctl register aamra meeting.aamranetworks.net aamraldap
+
+
+systemctl restart prosody jicofo jitsi-videobridge2 nginx
+
+
+## Now > Access url from browser
+
+-------- Compelete your Setup ---------
+
++++++++++ Troubleshooting ++++++++++++++
+
+tail -f /var/log/auth.log
+
+tail -f /var/log/prosody/*.log
+
+cat /var/log/auth.log | grep -i "accept"
+
+++++++++++++++++++++++++++++
